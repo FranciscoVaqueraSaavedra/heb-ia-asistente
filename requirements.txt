@@ -1,0 +1,11 @@
+gradio==6.30.0
+pandas==3.0.6
+sqlalchemy==2.1.4
+langchain==0.2.16
+langchain-google-genai==1.0.10
+langchain-community==0.2.16
+langchain-experimental==0.0.64
+chromadb==1.5.9
+pypdf==6.20.1
+python-dotenv==1.2.4
+sentence-transformers==6.1.0

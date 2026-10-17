@@ -1,0 +1,12 @@
+venv/
+
+.env
+
+__pycache__/
+*.pyc
+
+tiendas.db
+chroma_db/
+
+.chainlit/
+.files/
