@@ -6,6 +6,7 @@ from langchain.agents import AgentExecutor, create_react_agent, Tool
 from langchain_core.prompts import PromptTemplate
 from langchain_experimental.sql import SQLDatabaseChain
 from langchain_community.utilities import SQLDatabase
+from langchain_core.callbacks import BaseCallbackHandler
 from dotenv import load_dotenv
 
 
@@ -83,9 +84,26 @@ prompt = PromptTemplate.from_template(TEMPLATE_AGENTE)
 agente_react = create_react_agent(llm, tools, prompt)
 agente = AgentExecutor(agent=agente_react, tools=tools, verbose=True, handle_parsing_errors=True)
 
+class ContadorTokens(BaseCallbackHandler):
+    def __init__(self):
+        self.entrada = 0
+        self.salida = 0
+        self.llamadas = 0
+
+    def on_llm_end(self, response, **kwargs):
+        self.llamadas += 1
+        for generaciones in response.generations:
+            for gen in generaciones:
+                meta = getattr(getattr(gen, "message", None), "usage_metadata", None)
+                if meta:
+                    self.entrada += meta.get("input_tokens", 0)
+                    self.salida += meta.get("output_tokens", 0)
+                    
 def responder(mensaje, historial):
     try:
-        respuesta = agente.invoke({"input": mensaje})
+        cb = ContadorTokens()
+        respuesta = agente.invoke({"input": mensaje}, config={"callbacks": [cb]})
+        print(f"TOKENS -> llamadas: {cb.llamadas} | entrada: {cb.entrada} | salida: {cb.salida}")
         return respuesta["output"]
     except Exception as e:
         return f"⚠️ Ocurrió un error al procesar la consulta: {str(e)}"
